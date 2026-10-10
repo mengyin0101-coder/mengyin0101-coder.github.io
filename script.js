@@ -25,6 +25,10 @@ function setLanguage(language) {
   document.querySelectorAll("[data-aria-en]").forEach((element) => {
     element.setAttribute("aria-label", element.dataset[language === "zh" ? "ariaZh" : "ariaEn"]);
   });
+  document.querySelectorAll("img[data-src-en][data-src-zh]").forEach((image) => {
+    const source = language === "zh" ? image.dataset.srcZh : image.dataset.srcEn;
+    if (image.getAttribute("src") !== source) image.src = source;
+  });
   const pageMeta = localizedPageMeta[pageKey]?.[language];
   if (pageMeta) {
     document.title = pageMeta.title;
