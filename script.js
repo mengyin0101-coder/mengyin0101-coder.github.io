@@ -300,18 +300,14 @@ if (mobileCaseIndex) {
   }).observe(mobileCaseIndex);
 }
 
-// Categories filter the cases themselves, without a separate project directory.
+// Filter all twelve homepage projects together.
 const categoryButtons = document.querySelectorAll('[data-project-filter]');
-const categorizedStudies = document.querySelectorAll('.snapshot-study[data-project-category]');
-function filterStudies(category) {
-  categoryButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.projectFilter === category)));
-  categorizedStudies.forEach(study => { study.hidden = category !== 'all' && study.dataset.projectCategory !== category; });
-}
-categoryButtons.forEach(button => button.addEventListener('click', () => filterStudies(button.dataset.projectFilter)));
-window.addEventListener('hashchange', () => {
-  const target = document.getElementById(location.hash.slice(1));
-  if (target?.matches('.snapshot-study[hidden]')) {
-    filterStudies('all');
-    target.scrollIntoView({behavior: 'instant'});
-  }
-});
+const projectCards = document.querySelectorAll('#projects [data-project-category]');
+categoryButtons.forEach(button => button.addEventListener('click', () => {
+  const category = button.dataset.projectFilter;
+  categoryButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
+  projectCards.forEach(card => { card.hidden = category !== 'all' && card.dataset.projectCategory !== category; });
+  document.querySelectorAll('#projects .project-grid, #projects .snapshot-grid, #projects .snapshot-list').forEach(grid => {
+    grid.hidden = !Array.from(grid.children).some(card => !card.hidden);
+  });
+}));

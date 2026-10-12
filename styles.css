@@ -2356,8 +2356,14 @@ body:not(.is-zh) .project-gallery figure > img { margin-top: auto; }
 .project-category { color: var(--muted); font-size: 12px; line-height: 1.5; font-weight: 600; letter-spacing: .02em; }
 .snapshot-study { scroll-margin-top: calc(var(--site-header-height, 76px) + 24px); }
 
-.project-filters.section { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 0; padding-bottom: 24px; }
+.project-filters { display: flex; flex-wrap: wrap; gap: 8px; padding-top: 0; padding-bottom: 24px; }
 .project-filters button { font: inherit; font-size: 13px; line-height: 1.5; padding: 9px 15px; border: 1px solid var(--line); border-radius: 24px; color: var(--ink); background: transparent; cursor: pointer; }
 .project-filters button[aria-pressed="true"] { background: var(--green); border-color: var(--green); color: white; }
 .project-filters button:focus-visible { outline: 2px solid var(--green); outline-offset: 3px; }
 .snapshot-study[hidden] { display: none; }
+
+#projects [hidden] { display: none !important; }
+#projects .snapshot-grid, #projects .snapshot-list { margin-top: 28px; }
+#projects .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#projects .project-card { grid-column: auto; }
+@media (max-width: 700px) { #projects .project-grid { grid-template-columns: 1fr; } }
