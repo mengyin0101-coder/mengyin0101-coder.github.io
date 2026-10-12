@@ -57,6 +57,40 @@ if (lightbox) {
   const previousButton = lightbox.querySelector(".lightbox-prev");
   const nextButton = lightbox.querySelector(".lightbox-next");
   const counter = lightbox.querySelector(".lightbox-count");
+  const viewport = document.createElement("div");
+  viewport.className = "lightbox-viewport";
+  viewport.tabIndex = 0;
+  lightboxImage.before(viewport);
+  viewport.append(lightboxImage);
+  const tools = document.createElement("div");
+  tools.className = "lightbox-tools";
+  tools.innerHTML = `<button type="button" class="lightbox-zoom" aria-pressed="false"></button><a class="lightbox-original" target="_blank" rel="noopener"></a>`;
+  viewport.after(tools);
+  const zoomButton = tools.querySelector("button");
+  const originalLink = tools.querySelector("a");
+  let zoomed = false;
+  function setZoom(value) {
+    zoomed = value;
+    viewport.classList.toggle("is-zoomed", value);
+    viewport.scrollTo(0, 0);
+    zoomButton.setAttribute("aria-pressed", String(value));
+    const zh = document.body.classList.contains("is-zh");
+    viewport.setAttribute("aria-label", zh ? "图片区域，放大后可滚动查看" : "Image area; scroll to explore when zoomed");
+    zoomButton.textContent = value ? (zh ? "适应窗口" : "Fit image") : (zh ? "放大 3×" : "Zoom 3×");
+  }
+  zoomButton.addEventListener("click", () => setZoom(!zoomed));
+  let drag = null;
+  viewport.addEventListener("pointerdown", (event) => {
+    if (!zoomed || event.pointerType !== "mouse" || event.button !== 0) return;
+    drag = { x: event.clientX, y: event.clientY, left: viewport.scrollLeft, top: viewport.scrollTop };
+    viewport.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  viewport.addEventListener("pointermove", (event) => {
+    if (drag) viewport.scrollTo(drag.left + drag.x - event.clientX, drag.top + drag.y - event.clientY);
+  });
+  viewport.addEventListener("pointerup", () => { drag = null; });
+  viewport.addEventListener("pointercancel", () => { drag = null; });
   const selector = ".evidence-grid img, .hoka-gallery img, .snapshot-evidence img";
   const evidenceImages = [...document.querySelectorAll(selector)];
   let gallery = [];
@@ -70,6 +104,9 @@ if (lightbox) {
     const caption = figure?.querySelector(`figcaption.lang-${language}-only`);
     lightboxImage.src = image.currentSrc || image.src;
     lightboxImage.alt = image.alt;
+    originalLink.href = lightboxImage.src;
+    originalLink.textContent = language === "zh" ? "查看原图 ↗" : "View original ↗";
+    setZoom(false);
     lightboxCaption.textContent = caption?.textContent || image.alt;
     counter.textContent = `${currentIndex + 1} / ${gallery.length}`;
     previousButton.disabled = nextButton.disabled = gallery.length < 2;
@@ -108,7 +145,7 @@ if (lightbox) {
   // horizontal gestures on an unzoomed image change the page.
   let swipeStart = null;
   lightboxImage.addEventListener("touchstart", (event) => {
-    swipeStart = event.touches.length === 1 && (window.visualViewport?.scale || 1) <= 1.01
+    swipeStart = !zoomed && event.touches.length === 1 && (window.visualViewport?.scale || 1) <= 1.01
       ? { x: event.touches[0].clientX, y: event.touches[0].clientY, time: performance.now() }
       : null;
   }, { passive: true });
@@ -130,7 +167,7 @@ if (lightbox) {
   nextButton.addEventListener("click", () => moveImage(1));
   closeButton.addEventListener("click", () => lightbox.close());
   lightbox.addEventListener("keydown", (event) => {
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+    if (!zoomed && (event.key === "ArrowLeft" || event.key === "ArrowRight")) {
       event.preventDefault();
       moveImage(event.key === "ArrowLeft" ? -1 : 1);
     }

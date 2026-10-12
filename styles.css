@@ -417,6 +417,7 @@ p {
 
 .project-card {
   display: grid;
+  align-content: start;
   gap: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -682,8 +683,9 @@ p {
   display: grid;
   grid-template-columns: 130px minmax(0, 1fr);
   gap: 28px;
-  padding: 22px 0;
-  border-bottom: 1px solid var(--line);
+  padding: 22px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--line);
 }
 
 .timeline .timeline-current {
@@ -2312,3 +2314,41 @@ body:not(.is-zh) .project-gallery figure > .lang-en-only {
   padding: 0 0 12px;
 }
 body:not(.is-zh) .project-gallery figure > img { margin-top: auto; }
+
+/* Consistent landing space below the fixed header. Sections already have top padding. */
+#about, #projects, #experience, #contact {
+  scroll-margin-top: calc(var(--site-header-height, 76px) - 48px);
+}
+@media (max-width: 620px) {
+  #about, #projects, #experience, #contact {
+    scroll-margin-top: calc(var(--site-header-height, 70px) - 30px);
+  }
+}
+
+/* Read dense slides without changing the portfolio gallery layout. */
+.lightbox-viewport {
+  overflow: auto;
+  max-height: 60vh;
+  overscroll-behavior: contain;
+}
+.lightbox-viewport.is-zoomed { height: 60vh; cursor: grab; }
+.lightbox-viewport.is-zoomed:active { cursor: grabbing; }
+.image-lightbox .lightbox-viewport.is-zoomed img {
+  width: 300%;
+  max-width: none;
+  max-height: none;
+  touch-action: pan-x pan-y pinch-zoom;
+}
+.lightbox-tools { display: flex; justify-content: center; gap: 12px; margin-top: 12px; }
+.lightbox-tools button, .lightbox-tools a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 8px 14px; border: 1px solid #718077;
+  border-radius: 5px; background: transparent; color: white;
+  font: inherit; font-size: 13px; cursor: pointer;
+}
+.lightbox-tools button:hover, .lightbox-tools a:hover { background: #234331; }
+.lightbox-tools a:focus-visible { outline: 2px solid var(--lime); outline-offset: 3px; }
+@media (max-width: 600px) {
+  .lightbox-viewport, .lightbox-viewport.is-zoomed { max-height: 48vh; }
+  .lightbox-viewport.is-zoomed { height: 48vh; }
+}
