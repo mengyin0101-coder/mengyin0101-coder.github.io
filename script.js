@@ -299,3 +299,19 @@ if (mobileCaseIndex) {
     document.documentElement.style.setProperty("--case-index-height", `${mobileCaseIndex.offsetHeight}px`);
   }).observe(mobileCaseIndex);
 }
+
+// Categories filter the cases themselves, without a separate project directory.
+const categoryButtons = document.querySelectorAll('[data-project-filter]');
+const categorizedStudies = document.querySelectorAll('.snapshot-study[data-project-category]');
+function filterStudies(category) {
+  categoryButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.projectFilter === category)));
+  categorizedStudies.forEach(study => { study.hidden = category !== 'all' && study.dataset.projectCategory !== category; });
+}
+categoryButtons.forEach(button => button.addEventListener('click', () => filterStudies(button.dataset.projectFilter)));
+window.addEventListener('hashchange', () => {
+  const target = document.getElementById(location.hash.slice(1));
+  if (target?.matches('.snapshot-study[hidden]')) {
+    filterStudies('all');
+    target.scrollIntoView({behavior: 'instant'});
+  }
+});
