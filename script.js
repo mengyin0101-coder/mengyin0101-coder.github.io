@@ -300,14 +300,35 @@ if (mobileCaseIndex) {
   }).observe(mobileCaseIndex);
 }
 
-// Filter all twelve homepage projects together.
+// Keep project filtering and return position within this browser session.
 const categoryButtons = document.querySelectorAll('[data-project-filter]');
 const projectCards = document.querySelectorAll('#projects [data-project-category]');
-categoryButtons.forEach(button => button.addEventListener('click', () => {
-  const category = button.dataset.projectFilter;
-  categoryButtons.forEach(item => item.setAttribute('aria-pressed', String(item === button)));
-  projectCards.forEach(card => { card.hidden = category !== 'all' && card.dataset.projectCategory !== category; });
-  document.querySelectorAll('#projects .project-grid, #projects .snapshot-grid, #projects .snapshot-list').forEach(grid => {
-    grid.hidden = !Array.from(grid.children).some(card => !card.hidden);
+if (projectCards.length) {
+  const collection = document.querySelector('.project-collection');
+  const readState = () => { try { return JSON.parse(sessionStorage.getItem('portfolioProjects') || '{}'); } catch { return {}; } };
+  const saveState = state => { try { sessionStorage.setItem('portfolioProjects', JSON.stringify(state)); } catch {} };
+  function applyCategory(category) {
+    if (!['all', 'events', 'brands', 'outdoor'].includes(category)) category = 'all';
+    categoryButtons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.projectFilter === category)));
+    collection.classList.toggle('is-filtered', category !== 'all');
+    projectCards.forEach(card => { card.hidden = category !== 'all' && card.dataset.projectCategory !== category; });
+    collection.querySelectorAll('.project-grid, .snapshot-grid, .snapshot-list').forEach(grid => {
+      grid.hidden = !Array.from(grid.children).some(card => !card.hidden);
+    });
+    return category;
+  }
+  applyCategory(readState().category || 'all');
+  categoryButtons.forEach(button => button.addEventListener('click', () => {
+    saveState({category: applyCategory(button.dataset.projectFilter)});
+  }));
+  projectCards.forEach(card => card.addEventListener('click', () => {
+    saveState({category: document.querySelector('[data-project-filter][aria-pressed="true"]').dataset.projectFilter, returnHash: location.hash, returnId: card.getAttribute('href'), offset: card.getBoundingClientRect().top});
+  }));
+  window.addEventListener('pageshow', () => {
+    const state = readState();
+    if (!state.returnId || (location.hash && location.hash !== '#projects' && location.hash !== state.returnHash)) return;
+    const card = Array.from(projectCards).find(item => item.getAttribute('href') === state.returnId);
+    if (card) requestAnimationFrame(() => requestAnimationFrame(() => window.scrollBy({top: card.getBoundingClientRect().top - (state.offset ?? 100), behavior: 'instant'})));
+    saveState({category: state.category});
   });
-}));
+}
